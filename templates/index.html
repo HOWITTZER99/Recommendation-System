@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Movie Recommender</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <style>
+      body {
+        background-color: lightgreen;
+        font-family: Arial, sans-serif;
+        background-image: url('templates/movieimage.png');
+        background-size: cover;
+        background-position: center;
+      }
+      h1, h2 {
+        color: #333;
+        text-align: center;
+      }
+      h3 {
+        color: white;
+        text-align: center;
+        margin-top: 50px;
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+        color: #333;
+      }
+      input[type="text"] {
+        padding: 10px;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      button[type="submit"] {
+        background-color: #0099cc;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button[type="submit"]:hover {
+        background-color: #006699;
+      }
+      ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+      li {
+        margin: 5px 0;
+        color: #333;
+      }
+      .recommendation-box {
+        background-color: #008000;
+        color: white;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+        margin: 0 auto;
+        margin-top: 50px;
+        width: 50%;
+      }
+      #recommended-movies {
+        background-color: lightblue;
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      class MovieRecommender extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {movie: '', recommendedMovies: []};
+          this.handleInputChange = this.handleInputChange.bind(this);
+          this.handleSubmit = this.handleSubmit.bind(this);
+        }
+
+        handleInputChange(event) {
+          this.setState({movie: event.target.value});
+        }
+
+        handleSubmit(event) {
+          event.preventDefault();
+          fetch('/recommend', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({movie: this.state.movie})
+          })
+          .then(res => res.json())
+          .then(data => {
+            this.setState({recommendedMovies: data});
+          });
+        }
+
+        render() {
+          return (
+            <div>
+              <h1>Movie Recommender</h1>
+              <form onSubmit={this.handleSubmit}>
+                <label>
+                  Enter a movie name:
+                  <input type="text" value={this.state.movie} onChange={this.handleInputChange} required />
+                </label>
+                <br /><br />
+                <button type="submit">Recommend</button>
+              </form>
+              {this.state.recommendedMovies.length > 0 &&
+                <div id="recommended-movies">
+                  <h2>Recommended Movies:</h2>
+                  <ul>
+                    {this.state.recommendedMovies.map(movie => <li key={movie}>{movie}</li>)}
+                  </ul>
+                </div>
+              }
+            </div>
+          );
+        }
+      }
+
+      ReactDOM.render(<MovieRecommender />, document.getElementById('root'));
+    </script>
+  </body>
+</html>
